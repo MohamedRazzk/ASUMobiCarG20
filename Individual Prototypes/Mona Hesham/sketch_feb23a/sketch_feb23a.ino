@@ -1,7 +1,7 @@
- int led1 = 4 ;
- int led2 =  5 ;
- int led3 = 6 ; 
- int led4 = 7 ;
+ int led1 = 10 ;
+ int led2 =  11 ;
+ int led3 = 12 ; 
+ int led4 = 14 ;
 void setup() {
  
   pinMode (led1,OUTPUT) ;
