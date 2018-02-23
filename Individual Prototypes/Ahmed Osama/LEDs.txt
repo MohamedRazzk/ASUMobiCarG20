@@ -1,0 +1,46 @@
+int r = 2;
+int g = 3;
+int b = 4;
+int k = 5;
+
+
+void setup()
+{
+
+  pinMode(r,OUTPUT); pinMode(g,OUTPUT); pinMode(b,OUTPUT);
+ 
+}
+void loop()
+{
+     
+              digitalWrite(r,HIGH);
+              digitalWrite(g,LOW);
+              digitalWrite(b,LOW);
+              digitalWrite (k,LOW);
+                 delay (125); 
+              digitalWrite(r,LOW);
+              digitalWrite(g,HIGH);
+              digitalWrite(b,LOW);
+                  digitalWrite (k,LOW);
+     delay (125); 
+              digitalWrite(r,LOW);
+              digitalWrite(g,LOW);
+              digitalWrite(b,HIGH);
+                  digitalWrite (k,LOW);
+             delay (125); 
+             digitalWrite(r,LOW);
+              digitalWrite(g,LOW);
+              digitalWrite(b,LOW);
+                  digitalWrite (k,HIGH);
+                  delay (125);
+                  
+     digitalWrite(r,LOW);
+              digitalWrite(g,LOW);
+              digitalWrite(b,HIGH);
+                  digitalWrite (k,LOW);
+             delay (125); digitalWrite(r,LOW);
+              digitalWrite(g,HIGH);
+              digitalWrite(b,LOW);
+                  digitalWrite (k,LOW);
+     delay (125); 
+  }
