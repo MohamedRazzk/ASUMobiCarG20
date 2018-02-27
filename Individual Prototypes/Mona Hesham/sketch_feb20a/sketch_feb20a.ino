@@ -1,4 +1,4 @@
-int led = 13 ;
+int led = 14 ;
 
 void setup() {
  
@@ -7,7 +7,7 @@ void setup() {
 
 void loop () {
   digitalWrite(led, HIGH);   
-  delay(2000);              
+  delay(100);              
   digitalWrite(led, LOW);    
-  delay(2000);              
+  delay(100);              
 }
