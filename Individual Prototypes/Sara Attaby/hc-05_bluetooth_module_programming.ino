@@ -1,4 +1,6 @@
 #include <SoftwareSerial.h>
+
+#include <SoftwareSerial.h>
 SoftwareSerial myserial (5,6) ;// bluetooh module: tx=5 , rx=6
 /*
   Blink
@@ -19,17 +21,22 @@ SoftwareSerial myserial (5,6) ;// bluetooh module: tx=5 , rx=6
 // the setup function runs once when you press reset or power the board
 void setup() {
   myserial.begin(9600);
-  Serial.begin(9600);
+  pinMode(x,OUTPUT);
 }
 
 // the loop function runs over and over again forever
 void loop() {
  if(myserial.available())
 {
-Serial.write(myserial.read());
-
+if (myserial.read()== 'n' );
+{
+  digitalWrite(x,HIGH);
 }
-if (Serial.available())
+{
+else (digitalWrite(x,LOW);
+}
+}
+}
 {
   myserial.write(Serial.read());
 }
