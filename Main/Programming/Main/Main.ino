@@ -315,10 +315,7 @@ void loop() {
 
   }
 
-  else if (Car_Mode == 2)
-  {
-    forward();
-  }
+  
 }
 
 
