@@ -2,33 +2,34 @@
 #include <SoftwareSerial.h>
 #include <AFMotor.h>
 
-int bdelay = 35 ;
+int c_speed = 60 ;
+int l_speed = 120;
+int ll_speed =100;
+int cl_speed = 100;
 
+int r_speed =  l_speed +20 ;
+int rr_speed =  ll_speed +20 ;
+int cr_speed =  cl_speed +20 ;
+ 
+
+
+
+int w = 0 ;
+int b = 1;
+const int bdelay = 35 ;            //speed delation for bluetooth medule 
+const int inf_delay = 10 ;        //speed delation for infinity function
+ int last_state = 0 ; 
 SoftwareSerial mySerial(50, 52); //rx -tx  for hc-05
-AF_DCMotor M_FR(1, MOTOR12_64KHZ);
-AF_DCMotor M_FL(2, MOTOR12_64KHZ);
-AF_DCMotor M_BL(3, MOTOR12_64KHZ);
-AF_DCMotor M_BR(4, MOTOR12_64KHZ);
 
-const int left_pin = 14 ;
-const int center_pin = 15 ;
-const int right_pin = 16 ;
+AF_DCMotor M_FR(3, MOTOR12_64KHZ); AF_DCMotor M_FL(4, MOTOR12_64KHZ); AF_DCMotor M_BL(1, MOTOR12_64KHZ); AF_DCMotor M_BR(2, MOTOR12_64KHZ); // motor driver speed
 
-const int echo2 = 17 ;
-const int trig2 = 18 ;
-const int echo1 = 19 ;
-const int trig1 = 20 ;
+const int left_pin = 14 ; const int center_pin = 15 ; const int right_pin = 16 ; const int cen_r_pin = 49 ;  const int cen_l_pin = 51 ; // infra red pin define 
 
+const int echo2 = 17 ; const int trig2 = 18 ;const int echo1 = 19 ; const int trig1 = 20 ; // ultra sonice pin define 
+ 
+long duration1; int distance1 = 40; int ultraone_distance = 40; int ultratwo_distance = 40 ; // ultrasonic distance define 
 
-
-
-long duration1;
-int distance1 = 40;
-int ultraone_distance = 40;
-int ultratwo_distance = 40 ;
-int left_state = 0  ;
-int center_state = 0 ;
-int right_state = 0 ;
+ int center_state = 0 ; int right_state  = 0 ; int cin_r_state = 0 ;  int cin_l_state = 0 ;  int left_state = 0  ;// first state of infra red 
 
 int speedSet = 0;
 char Bdata = '0' ;
@@ -55,13 +56,14 @@ void setup() {
   pinMode(left_pin, INPUT) ;
   pinMode(center_pin, INPUT) ;
   pinMode(right_pin, INPUT) ;
-
+  pinMode(cen_r_pin,INPUT) ;
+   pinMode(cen_l_pin,INPUT) ;
+   
   pinMode(trig1, OUTPUT); // Sets the trigPin as an Output
   pinMode(echo1, INPUT); // Sets the echoPin as an Input
   pinMode(trig2, OUTPUT); // Sets the trigPin as an Output
   pinMode(echo2, INPUT); // Sets the echoPin as an Input
 }
-
 int ultraone() {// ulttasonic one calculations
   digitalWrite(trig1, LOW);
   delayMicroseconds(2);
@@ -117,7 +119,7 @@ void stopmode () {
   M_BR.run(RELEASE);
 
 }
-void inf_forward (int R_speed , int L_speed) {
+void inf_forward (int R_speed , int L_speed , int del) {
   M_FR.setSpeed(R_speed);
   M_FL.setSpeed(L_speed);
   M_BR.setSpeed(R_speed);
@@ -127,6 +129,8 @@ void inf_forward (int R_speed , int L_speed) {
   M_FR.run(FORWARD);
   M_BL.run(FORWARD);
   M_BR.run(FORWARD);
+  delay(del); 
+  stopmode(); 
 }
 void forward () {
 
@@ -236,10 +240,23 @@ void forward_left(int c_speed ) { // c_speed is  a cervatiuare speed
   stopmode();
   speedset() ;
 }
-void line_follower () ;
+void inf_backward (int R_speed , int L_speed , int del) {
+  M_FR.setSpeed(R_speed);
+  M_FL.setSpeed(L_speed);
+  M_BR.setSpeed(R_speed);
+  M_BL.setSpeed(L_speed);
 
-
+  M_FL.run(BACKWARD);
+  M_FR.run(BACKWARD);
+  M_BL.run(BACKWARD);
+  M_BR.run(BACKWARD);
+  delay(del); 
+  stopmode(); 
+}
 void loop() {
+  /* // ultrasonic code callculations 
+   *  
+   * 
   ultraone_distance = ultraone() ;
   ultratwo_distance = ultratwo() ;
 
@@ -248,21 +265,22 @@ void loop() {
   Serial.print("Distance2 =  " ) ;  
  Serial.println(ultratwo_distance) ; 
  
-  Car_Mode = 0; 
-  ///Serial.println(ultraone_distance) ;
-  //Serial.println(ultratwo_distance) ;
-  if (ultraone_distance <= 15   ) {stopmode();}
-  if (ultratwo_distance <=15  ) {stopmode();}
-  if (Car_Mode == 0 ) { //bluetooth Mode
+  Serial.println(ultraone_distance) ;
+  Serial.println(ultratwo_distance) ;
+ // if (ultraone_distance <= 15   ) {stopmode();}
+ // if (ultratwo_distance <=15  ) {stopmode();}
+*/   
 
+  Car_Mode = 1; 
 
+  if (Car_Mode == 0 )
+  
+  { //bluetooth Mode
 
 
     if (mySerial.available()) { // If the bluetooth module has some incoming data from the phone
       Bdata = mySerial.read(); // Read the data, one character at a time
       Serial.write(Bdata); // Write char received via Bluetooth to the Serial Monitor of Arduino IDE
-
-
 
 
       if (Bdata == '1' , '2' , '3' , '4' )
@@ -283,40 +301,99 @@ void loop() {
 
   else if (Car_Mode == 1) { //car in line follow mode
 
-
-    left_state = digitalRead(left_pin);
-    center_state = digitalRead(center_pin);
+    left_state  = digitalRead(left_pin);
+    center_state= digitalRead(center_pin);
     right_state = digitalRead(right_pin);
+    cin_r_state = digitalRead(cen_r_pin);
+    cin_l_state = digitalRead(cen_l_pin);
+    cin_l_state=!cin_l_state ; 
+    cin_r_state=!cin_r_state ;
 
-    if (left_state == HIGH ) {
-      Serial.print("L_black");
-      forward_left(255);
-      inf_forward(50, 255);
+    
+/*
+Serial.print("  ") ;  Serial.print(left_state) ; Serial.print("  ") ; 
+Serial.print("  ") ;  Serial.print(cin_l_state); Serial.print("  ") ; 
+Serial.print("  ") ; Serial.print(center_state); Serial.print("  ") ; 
+Serial.print("  ") ; Serial.print(cin_r_state) ; Serial.print("  ") ; 
+Serial.print("  ") ; Serial.print(right_state);Serial.print("  ") ; 
+Serial.print("  ") ; Serial.print("  ") ; 
+Serial.println();
+
+
+*/
+repeat :
+
+
+if (left_state == b &&  cin_l_state == w && center_state == w && cin_r_state == w  &&  right_state == w ) {inf_forward(r_speed,0 , 10); last_state= 1;} // first left 
+
+else if (left_state == w &&  cin_l_state == b && center_state == w && cin_r_state == w  &&  right_state == w  ) {inf_forward(rr_speed,0 , 10); last_state =2; } //second lefr 
+
+else if (left_state == b &&  cin_l_state == b && center_state == w && cin_r_state == w &&  right_state == w  ) {inf_forward(rr_speed,0 , 10);last_state =3 ;} //left lefr 
+
+else if (left_state == w &&  cin_l_state == b && center_state == b && cin_r_state == w  &&  right_state == w  ) {inf_forward(cr_speed,0, 10);last_state =4 ;} //  center left 
+
+else if (left_state == b &&  cin_l_state == b && center_state == b && cin_r_state == w  &&  right_state == w ) {inf_forward(cr_speed,0, 10);last_state =5 ;} // center left left 
+
+
+else if (left_state == b &&  cin_l_state ==w && center_state == b && cin_r_state == w  &&  right_state == w ) {inf_forward(rr_speed,0 , 10);last_state =6 ;} // center first left 
+
+
+else if (left_state == w &&  cin_l_state == b && center_state == b && cin_r_state == b  &&  right_state == w ) {inf_forward(c_speed,c_speed , 10);last_state =7;} //center 
+else if (left_state == w &&  cin_l_state == w && center_state == b && cin_r_state == w  &&  right_state == w  ) {inf_forward(c_speed,c_speed, inf_delay);last_state =8; } //center 
+
+
+
+else if (left_state == w &&  cin_l_state == w && center_state == w && cin_r_state == w  &&  right_state == b ) {inf_forward(0,l_speed, 10);last_state =9 ;} // first right
+
+else if (left_state == w &&  cin_l_state == w && center_state == w && cin_r_state == b  &&  right_state == w ) {inf_forward(0,ll_speed, 10);last_state =10; } // second righ 
+
+else if (left_state == w &&  cin_l_state == w && center_state == w && cin_r_state == b  &&  right_state == b ) {inf_forward(0,ll_speed, 10);last_state =11; }  //right right
+
+else if (left_state == w &&  cin_l_state == b && center_state == b && cin_r_state == b  &&  right_state == b  ) {inf_forward(0,cl_speed, inf_delay);last_state =12 ;}  //center right 
+
+else if (left_state == w &&  cin_l_state == w && center_state == b && cin_r_state == b  &&  right_state == b ) {inf_forward(0,cl_speed,inf_delay);last_state =13 ;}    //center right right
+
+ 
+else if (left_state == w &&  cin_l_state == w && center_state == b && cin_r_state == w  &&  right_state == b ) {inf_forward(0,ll_speed, inf_delay);last_state =14; } // center first right
+
+
+
+else if (left_state == b &&  cin_l_state ==  b && center_state == b  && cin_r_state == b &&  right_state == b) {inf_forward(120,100,inf_delay);}    //out of line back action 2
+
+else if (left_state == w &&  cin_l_state ==  w && center_state == w  && cin_r_state == w &&  right_state == w) 
+{
+
+
+switch (last_state)
+{
+  case 1 : inf_forward(r_speed ,0,10); last_state= 1; break ; 
+  case 2 : inf_forward(rr_speed,0,10) ;break ;
+  case 3 : inf_forward(rr_speed,0,10) ; break ;
+  case 4 : inf_forward(cr_speed,0,10);; break ;
+  case 5 : inf_forward(cr_speed,0,10) ;break ;
+  case 6 : inf_forward(rr_speed,0 ,10); break ;
+  case 7 : inf_forward(c_speed,c_speed,10); break ;
+  case 8 : inf_forward(c_speed,c_speed,10); break ;
+  case 9 : inf_forward(0, l_speed, 150); break ;
+  case 10: inf_forward(0,ll_speed, 100); break ;
+  case 11: inf_forward(0,ll_speed, 100); break ;
+  case 12: inf_forward(0,cl_speed, inf_delay); break ;
+  case 13: inf_forward(0,cl_speed, inf_delay); break ;
+  case 14: inf_forward(0,ll_speed, inf_delay); break ;
+  }
+  
+  }   
+ 
+else {inf_forward(60,60,inf_delay);}
+
+
     }
-    //if(left_state==LOW ) {Serial.print("L_white") ;}
-
-    if (center_state == HIGH ) {
-      Serial.print("C_black");
-      inf_forward(255, 255);
-    }
-    if (center_state == LOW ) {
-      Serial.print("C_white");
-      stopmode();
-    }
-
-
-    if (right_state == HIGH ) {
-      Serial.print("R_black");
-      forward_right(255);
-      inf_forward(255, 50);
-    }
-    // if(right_state==LOW ) {Serial.print("R_white") ;}
-
-
   }
 
-  
-}
 
+
+  
+
+ 
 
 
