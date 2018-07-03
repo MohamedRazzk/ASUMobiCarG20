@@ -36,6 +36,7 @@ long duration1; int distance1 = 40; int ultraone_distance = 40; int ultratwo_dis
 int center_state = 0; int right_state = 0; int cin_r_state = 0;  int cin_l_state = 0;  int left_state = 0;// first state of infra red 
 
 const int photo = 26;
+const int buzzer = 28 ;
 
 int speedSet = 0;
 char Bdata = '0';
@@ -72,6 +73,7 @@ void setup() {
   pinMode(echo2, INPUT); // Sets the echoPin as an Input
 
   pinMode(photo, INPUT);
+  pinMode(buzzer, OUTPUT);
 }
 int ultraone() {// ulttasonic one calculations
   digitalWrite(trig1, LOW);
@@ -272,7 +274,7 @@ void line_follower() {
   cin_r_state = !cin_r_state;
 
 
-  /*
+  ///*
   Serial.print("  ") ;  Serial.print(left_state) ; Serial.print("  ") ;
   Serial.print("  ") ;  Serial.print(cin_l_state); Serial.print("  ") ;
   Serial.print("  ") ; Serial.print(center_state); Serial.print("  ") ;
@@ -282,8 +284,7 @@ void line_follower() {
   Serial.println();
 
 
-  */
-repeat:
+  //*/
 
 
   if (left_state == b &&  cin_l_state == w && center_state == w && cin_r_state == w  &&  right_state == w) { inf_forward(r_speed, 0, 10); last_state = 1; } // first left 
@@ -478,11 +479,16 @@ void forward_c(int R_speed, int L_speed ) {
   M_BR.run(FORWARD);
   delay(5);
 }
+void buzzeer()
+{
+   tone(buzzer, 300); // Send 1KHz sound signal...
+  delay(100);        // ...for 1 sec
+  noTone(buzzer);     // Stop sound...
+  
+  }
 void loop() {
-  /* // ultrasonic code callculations
-  *
-  *
-  *
+   // ultrasonic code callculations
+  
   ultraone_distance = ultraone() ;
   ultratwo_distance = ultratwo() ;
 
@@ -491,19 +497,17 @@ void loop() {
   Serial.print("Distance2 =  " ) ;
   Serial.println(ultratwo_distance) ;
 
-  Serial.println(ultraone_distance) ;
-  Serial.println(ultratwo_distance) ;
-  // if (ultraone_distance <= 15   ) {stopmode();}
-  // if (ultratwo_distance <=15  ) {stopmode();}
-  */
+   if (ultraone_distance <= 15   && ultraone_distance > 0  ) {stopmode();}
+   if (ultratwo_distance <= 15   && ultratwo_distance > 0  ) {stopmode();}
+ 
 
   //Serial.println (photo_val); // photo inturupt value checker 
   if (mySerial.available()) { // If the bluetooth module has some incoming data from the phone
     Bdata = mySerial.read(); // Read the data, one character at a time
-  //  Serial.println(Bdata); // Write char received via Bluetooth to the Serial Monitor of Arduino IDE
+  Serial.println(Bdata); // Write char received via Bluetooth to the Serial Monitor of Arduino IDE
 
 
-    if (Bdata == 'd') { // getting string form user  bluetooth  forward distance 
+         if (Bdata == 'd') { // getting string form user  bluetooth  forward distance 
 
       char order[100] = "";
 
@@ -682,7 +686,16 @@ dist = dist - 15;
     forward_c ( 220 ,  dist) ; 
     }
      }
-    else if (Bdata == 1, 2, 3, 4) {
+    else if (Bdata == 'l') { //car in line follow mode 
+      for (;;) {
+      Serial.println ("line Follower Mode");
+      line_follower(); 
+}
+  }
+
+    else if (Bdata == 'v') {buzzeer();}
+      
+      else if (Bdata == 1, 2, 3, 4) {
       switch (Bdata) { // arrows directions 
       case '1': forward(); break;
       case '2': backward(); break;
@@ -693,11 +706,8 @@ dist = dist - 15;
 
       }
     }
-    else if (Bdata == 5) { line_follower(); }//car in line follow mode 
-
-  }
 }
-
+}
 
 
 
